@@ -35,7 +35,6 @@ public class FilmController {
         return film;
     }
 
-
     @PutMapping
     public Film update(@Valid @RequestBody Film updatedFilm) {
         if (updatedFilm.getId() == 0) {
@@ -53,8 +52,6 @@ public class FilmController {
             throw new NotFoundException("Фильм с id = " + updatedFilm.getId() + " не найден");
         }
     }
-
-
 
     private long getNextId() {
         long currentMaxId = films.keySet()

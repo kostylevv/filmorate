@@ -8,51 +8,53 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Controller for films
- */
-
 @Slf4j
 @RestController
-@RequestMapping("/films")
-public class FilmController {
+@RequestMapping("/users")
+public class UserController {
 
-    private final Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
 
     @GetMapping
-    public Collection<Film> findAll() {
-        return films.values();
+    public Collection<User> findAll() {
+        return users.values();
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        log.info("Added film {}", film);
-        return film;
+    public User create(@Valid @RequestBody User user) {
+        user.setId(getNextId());
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+        users.put(user.getId(), user);
+        log.info("Added user {}", user);
+        return user;
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film updatedFilm) {
-        if (updatedFilm.getId() == 0) {
-            log.error("Updated film id should be present");
+    public User update(@Valid @RequestBody User updatedUser) {
+        if (updatedUser.getId() == 0) {
+            log.error("Updated user id should be present");
             throw new ValidationException("ID не может быть пустым");
         }
 
-        if (films.containsKey(updatedFilm.getId())) {
-            films.remove(updatedFilm.getId());
-            films.put(updatedFilm.getId(), updatedFilm);
-            log.info("Updated film {}", updatedFilm);
-            return updatedFilm;
+        if (users.containsKey(updatedUser.getId())) {
+            users.remove(updatedUser.getId());
+            if (updatedUser.getName() == null || updatedUser.getName().isBlank()) {
+                updatedUser.setName(updatedUser.getLogin());
+            }
+            users.put(updatedUser.getId(), updatedUser);
+            log.info("Updated user {}", updatedUser);
+            return updatedUser;
         } else {
-            log.error("Film with id = {} wasn't found", updatedFilm.getId());
-            throw new NotFoundException("Фильм с id = " + updatedFilm.getId() + " не найден");
+            log.error("User with id = {} wasn't found", updatedUser.getId());
+            throw new NotFoundException("Пользователь с id = " + updatedUser.getId() + " не найден");
         }
     }
 
@@ -77,7 +79,7 @@ public class FilmController {
     }
 
     private long getNextId() {
-        long currentMaxId = films.keySet()
+        long currentMaxId = users.keySet()
                 .stream()
                 .mapToLong(id -> id)
                 .max()

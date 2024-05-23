@@ -2,9 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -45,7 +42,6 @@ public class UserController {
         }
 
         if (users.containsKey(updatedUser.getId())) {
-            users.remove(updatedUser.getId());
             if (updatedUser.getName() == null || updatedUser.getName().isBlank()) {
                 updatedUser.setName(updatedUser.getLogin());
             }
@@ -56,26 +52,6 @@ public class UserController {
             log.error("User with id = {} wasn't found", updatedUser.getId());
             throw new NotFoundException("Пользователь с id = " + updatedUser.getId() + " не найден");
         }
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(
-            MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ValidationException.class)
-    public String handleMyValidationExceptions(
-            ValidationException ex) {
-        return ex.getMessage();
     }
 
     private long getNextId() {

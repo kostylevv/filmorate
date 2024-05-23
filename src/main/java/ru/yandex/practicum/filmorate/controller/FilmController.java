@@ -2,9 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -46,7 +43,6 @@ public class FilmController {
         }
 
         if (films.containsKey(updatedFilm.getId())) {
-            films.remove(updatedFilm.getId());
             films.put(updatedFilm.getId(), updatedFilm);
             log.info("Updated film {}", updatedFilm);
             return updatedFilm;
@@ -54,26 +50,6 @@ public class FilmController {
             log.error("Film with id = {} wasn't found", updatedFilm.getId());
             throw new NotFoundException("Фильм с id = " + updatedFilm.getId() + " не найден");
         }
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(
-            MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ValidationException.class)
-    public String handleMyValidationExceptions(
-            ValidationException ex) {
-        return ex.getMessage();
     }
 
     private long getNextId() {

@@ -42,7 +42,7 @@ class FilmControllerTest {
 
     @BeforeAll
     void setUp() throws Exception {
-        baseUrl = "http://localhost:"+port+"/films";
+        baseUrl = "http://localhost:" + port + "/films";
         headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
         uri = new URI(baseUrl);
@@ -137,7 +137,7 @@ class FilmControllerTest {
         Film film = Film.builder().name("name").description("d")
                 .releaseDate(LocalDate.of(2703,12,12)).duration(1).build();
         Film added = this.controller.create(film);
-        added.setId(this.controller.findAll().size()+1);
+        added.setId(-1);
         HttpEntity<Film> request = new HttpEntity<>(added, headers);
         Assertions.assertTrue(this.restTemplate.exchange(uri, HttpMethod.PUT, request, String.class)
                 .getStatusCode().is5xxServerError());

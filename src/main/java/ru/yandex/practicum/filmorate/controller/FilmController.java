@@ -2,14 +2,14 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Controller for films
@@ -19,45 +19,30 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
+    private FilmService filmService;
 
-    private final Map<Long, Film> films = new HashMap<>();
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @GetMapping
     public Collection<Film> findAll() {
-        return films.values();
+        return filmService.findAll();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        log.info("Added film {}", film);
-        return film;
+        return filmService.addFilm(film);
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film updatedFilm) {
-        if (updatedFilm.getId() == 0) {
-            log.error("Updated film id should be present");
-            throw new ValidationException("ID не может быть пустым");
-        }
-
-        if (films.containsKey(updatedFilm.getId())) {
-            films.put(updatedFilm.getId(), updatedFilm);
-            log.info("Updated film {}", updatedFilm);
-            return updatedFilm;
-        } else {
-            log.error("Film with id = {} wasn't found", updatedFilm.getId());
-            throw new NotFoundException("Фильм с id = " + updatedFilm.getId() + " не найден");
-        }
+    public Film update(@Valid @RequestBody Film updatedFilm) throws ValidationException, NotFoundException {
+        return filmService.updateFilm(updatedFilm);
     }
 
-    private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @DeleteMapping
+    public void delete(@Valid @RequestBody Film filmToBeDeleted) throws ValidationException, NotFoundException {
+        filmService.deleteFilm(filmToBeDeleted);
     }
 }

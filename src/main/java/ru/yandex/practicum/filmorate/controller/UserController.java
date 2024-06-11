@@ -42,5 +42,11 @@ public class UserController {
         userService.deleteUser(deletedUser);
     }
 
+    @PutMapping("/users/{userId}/friends/{friendId}")
+    public void addFriend(@PathVariable("userId") long userId, @PathVariable("friendId") long friendId)
+            throws NotFoundException {
+        userService.addFriend(userId, friendId);
+    }
+
 
 }

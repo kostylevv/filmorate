@@ -11,12 +11,16 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.HashSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -27,6 +31,9 @@ class UserContorllerTest {
 
     @Autowired
     private UserController controller;
+
+    @Autowired
+    private UserService service;
 
     @LocalServerPort
     private int port;
@@ -140,6 +147,39 @@ class UserContorllerTest {
         HttpEntity<String> request = new HttpEntity<>("", headers);
         Assertions.assertTrue(this.restTemplate.exchange(uri, HttpMethod.PUT, request, String.class)
                 .getStatusCode().is4xxClientError());
+    }
+
+    @Test
+    void userAddFriendTest() {
+        User user1 = User.builder().name("User 1").birthday(LocalDate.now())
+                .email("user1@gmail.com").login("user1").friends(new HashSet<>()).build();
+        User user2 = User.builder().name("User 2").birthday(LocalDate.now())
+                .email("user2@gmail.com").login("user2").friends(new HashSet<>()).build();
+        User user3 = User.builder().name("Name").birthday(LocalDate.now())
+                .email("user3@gmail.com").login("user3").friends(new HashSet<>()).build();
+
+        HttpEntity<User> request1 = new HttpEntity<>(user1, headers);
+        HttpEntity<User> request2 = new HttpEntity<>(user2, headers);
+        HttpEntity<User> request3 = new HttpEntity<>(user3, headers);
+
+        this.restTemplate.postForEntity(uri, request1, String.class);
+        this.restTemplate.postForEntity(uri, request2, String.class);
+        this.restTemplate.postForEntity(uri, request3, String.class);
+
+        Assertions.assertTrue(service.getFriends(1).size() == 0);
+        Assertions.assertTrue(service.getFriends(2).size() == 0);
+        Assertions.assertTrue(service.getFriends(3).size() == 0);
+
+        URI uri = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand("1", "2")
+                .toUri();
+
+        this.restTemplate.put(uri, new HttpEntity<>(headers));
+        Assertions.assertTrue(service.getFriends(1).size() == 1);
+
+
     }
 
 }

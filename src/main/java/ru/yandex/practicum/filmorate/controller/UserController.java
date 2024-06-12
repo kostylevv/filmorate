@@ -33,20 +33,35 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User updatedUser) throws ValidationException, NotFoundException {
+    public User update(@Valid @RequestBody User updatedUser) {
         return userService.updateUser(updatedUser);
     }
 
     @DeleteMapping
-    public void delete(@Valid @RequestBody User deletedUser) throws ValidationException, NotFoundException {
+    public void delete(@Valid @RequestBody User deletedUser) {
         userService.deleteUser(deletedUser);
     }
 
     @PutMapping("/users/{userId}/friends/{friendId}")
-    public void addFriend(@PathVariable("userId") long userId, @PathVariable("friendId") long friendId)
-            throws NotFoundException {
+    public void addFriend(@PathVariable("userId") long userId, @PathVariable("friendId") long friendId) {
         userService.addFriend(userId, friendId);
     }
+
+    @DeleteMapping("/users/{userId}/friends/{friendId}")
+    public void deleteFriend(@PathVariable("userId") long userId, @PathVariable("friendId") long friendId) {
+        userService.deleteFriend(userId, friendId);
+    }
+
+    @GetMapping("/users/{userId}/friends")
+    public Collection<User> getFriends(@PathVariable("userId") long userId) {
+        return userService.getFriends(userId);
+    }
+
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable("id") long id, @PathVariable("otherId") long otherId) {
+        return userService.getCommonFriends(id, otherId);
+    }
+
 
 
 }

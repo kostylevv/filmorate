@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -8,9 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.*;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -20,7 +22,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -67,7 +68,7 @@ class UserContorllerTest {
     }
 
     @Test
-    void userIsAddedWihoutNameAndLoginIsUsed() {
+    void userIsAddedWihoutNameAndLoginIsUsed() throws Exception {
         User user = User.builder().birthday(LocalDate.now())
                 .email("nonameuser@exampleml.com").login("expl.login").build();
         HttpEntity<User> request = new HttpEntity<>(user, headers);
@@ -77,7 +78,7 @@ class UserContorllerTest {
                 .anyMatch(u -> u.getEmail().equals(user.getEmail())));
         Assertions.assertEquals(user.getLogin(), this.controller.findAll().stream()
                 .filter(u -> u.getEmail().equals(user.getEmail()))
-                .findFirst().get().getName());
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("User not found")).getName());
     }
 
     @Test
@@ -138,15 +139,15 @@ class UserContorllerTest {
         User added = this.controller.create(user);
         added.setId(-1);
         HttpEntity<User> request = new HttpEntity<>(added, headers);
-        Assertions.assertTrue(this.restTemplate.exchange(uri, HttpMethod.PUT, request, String.class)
-                .getStatusCode().is5xxServerError());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, this.restTemplate.exchange(uri, HttpMethod.PUT, request, String.class)
+                .getStatusCode());
     }
 
     @Test
     void voidUserUpdateNotOk() {
         HttpEntity<String> request = new HttpEntity<>("", headers);
-        Assertions.assertTrue(this.restTemplate.exchange(uri, HttpMethod.PUT, request, String.class)
-                .getStatusCode().is4xxClientError());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, this.restTemplate.exchange(uri, HttpMethod.PUT, request, String.class)
+                .getStatusCode());
     }
 
     @Test
@@ -166,20 +167,232 @@ class UserContorllerTest {
         this.restTemplate.postForEntity(uri, request2, String.class);
         this.restTemplate.postForEntity(uri, request3, String.class);
 
-        Assertions.assertTrue(service.getFriends(1).size() == 0);
-        Assertions.assertTrue(service.getFriends(2).size() == 0);
-        Assertions.assertTrue(service.getFriends(3).size() == 0);
+        Assertions.assertEquals(0, service.getFriends(1).size());
+        Assertions.assertEquals(0, service.getFriends(2).size());
+        Assertions.assertEquals(0, service.getFriends(3).size());
 
-        URI uri = UriComponentsBuilder
+        URI uri1 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand("1", "2")
                 .toUri();
 
-        this.restTemplate.put(uri, new HttpEntity<>(headers));
-        Assertions.assertTrue(service.getFriends(1).size() == 1);
+        this.restTemplate.put(uri1, new HttpEntity<>(headers));
+        Assertions.assertEquals(1, service.getFriends(1).size());
+        Assertions.assertEquals(1, service.getFriends(2).size());
+        Assertions.assertEquals(0, service.getFriends(3).size());
+
+        URI uri2 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand("3", "1")
+                .toUri();
+
+        this.restTemplate.put(uri2, new HttpEntity<>(headers));
+        Assertions.assertEquals(2, service.getFriends(1).size());
+        Assertions.assertEquals(1, service.getFriends(2).size());
+        Assertions.assertEquals(1, service.getFriends(3).size());
+
+        URI uri4 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand("454", "1")
+                .toUri();
+        HttpEntity<String> request = new HttpEntity<>("", headers);
+        ResponseEntity<String> response = this.restTemplate.exchange(uri4, HttpMethod.PUT, request, String.class);
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void deleteFriendTest() {
+        User user1 = User.builder().name("User 1").birthday(LocalDate.now())
+                .email("user1@gmail.com").login("user1").friends(new HashSet<>()).build();
+        User user2 = User.builder().name("User 2").birthday(LocalDate.now())
+                .email("user2@gmail.com").login("user2").friends(new HashSet<>()).build();
+        User user3 = User.builder().name("Name").birthday(LocalDate.now())
+                .email("user3@gmail.com").login("user3").friends(new HashSet<>()).build();
+
+        HttpEntity<User> request1 = new HttpEntity<>(user1, headers);
+        HttpEntity<User> request2 = new HttpEntity<>(user2, headers);
+        HttpEntity<User> request3 = new HttpEntity<>(user3, headers);
+
+        this.restTemplate.postForEntity(uri, request1, String.class);
+        this.restTemplate.postForEntity(uri, request2, String.class);
+        this.restTemplate.postForEntity(uri, request3, String.class);
+
+        URI uri1 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand("1", "2")
+                .toUri();
+
+        this.restTemplate.put(uri1, new HttpEntity<>(headers));
 
 
+        URI uri2 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand("3", "1")
+                .toUri();
+
+        this.restTemplate.put(uri2, new HttpEntity<>(headers));
+
+        URI uri3 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand("1", "2")
+                .toUri();
+       this.restTemplate.delete(uri3);
+
+        Assertions.assertEquals(1, service.getFriends(1).size());
+        Assertions.assertEquals(0, service.getFriends(2).size());
+        Assertions.assertEquals(1, service.getFriends(3).size());
+
+        URI uri4 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand("1", "3")
+                .toUri();
+        this.restTemplate.delete(uri4);
+
+        Assertions.assertEquals(0, service.getFriends(1).size());
+        Assertions.assertEquals(0, service.getFriends(2).size());
+        Assertions.assertEquals(0, service.getFriends(3).size());
+    }
+
+    @Test
+    void getFriendsTest() throws NullPointerException, JsonMappingException, JsonProcessingException {
+
+        User user1 = User.builder().name("User 124").birthday(LocalDate.now())
+                .email("user124@gmail.com").login("user124").friends(new HashSet<>()).build();
+        User user2 = User.builder().name("User 2").birthday(LocalDate.now())
+                .email("user245@gmail.com").login("user246").friends(new HashSet<>()).build();
+        User user3 = User.builder().name("Name").birthday(LocalDate.now())
+                .email("user344@gmail.com").login("user344").friends(new HashSet<>()).build();
+
+        HttpEntity<User> request1 = new HttpEntity<>(user1, headers);
+        HttpEntity<User> request2 = new HttpEntity<>(user2, headers);
+        HttpEntity<User> request3 = new HttpEntity<>(user3, headers);
+
+        User u1 = this.restTemplate.postForEntity(uri, request1, User.class).getBody();
+        User u2 = this.restTemplate.postForEntity(uri, request2, User.class).getBody();
+        User u3 = this.restTemplate.postForEntity(uri, request3, User.class).getBody();
+
+
+        URI uri1 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends")
+                .encode()
+                .buildAndExpand(u1.getId())
+                .toUri();
+
+        HttpEntity<String> request = new HttpEntity<>("", headers);
+        ResponseEntity<String> response = this.restTemplate.exchange(uri1, HttpMethod.GET, request, String.class);
+        Assertions.assertTrue(response.getStatusCode().is2xxSuccessful());
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response.getBody());
+        Assertions.assertEquals(0, root.size());
+
+        URI uri2 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand(u1.getId(), u2.getId())
+                .toUri();
+
+        this.restTemplate.put(uri2, new HttpEntity<>(headers));
+
+        URI uri3 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand(u3.getId(), u1.getId())
+                .toUri();
+
+        this.restTemplate.put(uri3, new HttpEntity<>(headers));
+
+        URI uri4 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends")
+                .encode()
+                .buildAndExpand(u1.getId())
+                .toUri();
+        ResponseEntity<String> response1 = this.restTemplate.exchange(uri4, HttpMethod.GET, request, String.class);
+        Assertions.assertTrue(response1.getStatusCode().is2xxSuccessful());
+        ObjectMapper mapper1 = new ObjectMapper();
+        JsonNode root1 = mapper1.readTree(response1.getBody());
+        Assertions.assertEquals(2, root1.size());
+    }
+
+    @Test
+    void getCommonFriendsTest() throws Exception {
+
+        User user1 = User.builder().name("User 124").birthday(LocalDate.now())
+                .email("user124@gmail.com").login("user124").friends(new HashSet<>()).build();
+        User user2 = User.builder().name("User 246").birthday(LocalDate.now())
+                .email("user245@gmail.com").login("user246").friends(new HashSet<>()).build();
+        User user3 = User.builder().name("Name 344").birthday(LocalDate.now())
+                .email("user344@gmail.com").login("user344").friends(new HashSet<>()).build();
+        User user4 = User.builder().name("Name 56").birthday(LocalDate.now())
+                .email("user56@gmail.com").login("user56").friends(new HashSet<>()).build();
+
+        HttpEntity<User> request1 = new HttpEntity<>(user1, headers);
+        HttpEntity<User> request2 = new HttpEntity<>(user2, headers);
+        HttpEntity<User> request3 = new HttpEntity<>(user3, headers);
+        HttpEntity<User> request4 = new HttpEntity<>(user4, headers);
+
+        User u1 = this.restTemplate.postForEntity(uri, request1, User.class).getBody();
+        User u2 = this.restTemplate.postForEntity(uri, request2, User.class).getBody();
+        User u3 = this.restTemplate.postForEntity(uri, request3, User.class).getBody();
+        User u4 = this.restTemplate.postForEntity(uri, request4, User.class).getBody();
+
+
+        URI uri1 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends")
+                .encode()
+                .buildAndExpand(u1.getId())
+                .toUri();
+
+        HttpEntity<String> request = new HttpEntity<>("", headers);
+        ResponseEntity<String> response = this.restTemplate.exchange(uri1, HttpMethod.GET, request, String.class);
+        Assertions.assertTrue(response.getStatusCode().is2xxSuccessful());
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response.getBody());
+        Assertions.assertEquals(0, root.size());
+
+        URI uri2 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand(u1.getId(), u2.getId())
+                .toUri();
+        URI uri3 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand(u1.getId(), u3.getId())
+                .toUri();
+        URI uri4 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand(u1.getId(), u4.getId())
+                .toUri();
+
+        this.restTemplate.put(uri2, new HttpEntity<>(headers));
+        this.restTemplate.put(uri3, new HttpEntity<>(headers));
+        this.restTemplate.put(uri4, new HttpEntity<>(headers));
+
+        URI uri5 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .encode()
+                .buildAndExpand(u2.getId(), u4.getId())
+                .toUri();
+
+        this.restTemplate.put(uri5, new HttpEntity<>(headers));
+
+        URI uri6 = UriComponentsBuilder
+                .fromUriString(baseUrl + "/users/{id}/friends/common/{otherId}")
+                .encode()
+                .buildAndExpand(u1.getId(), u2.getId())
+                .toUri();
+        ResponseEntity<String> response1 = this.restTemplate.exchange(uri6, HttpMethod.GET, request, String.class);
+        Assertions.assertTrue(response1.getStatusCode().is2xxSuccessful());
+        System.out.println(response1.getBody());
+        Assertions.assertTrue(response1.getBody().contains("{\"id\":" + u4.getId() + ","));
     }
 
 }

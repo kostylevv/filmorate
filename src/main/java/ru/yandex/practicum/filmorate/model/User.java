@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -29,7 +30,8 @@ public class User {
     @PastOrPresent
     private LocalDate birthday;
 
-    private Set<Long> friends;
+    @Builder.Default
+    private Set<Long> friends = new HashSet<>();
 
     public Set<Long> getFriends() {
         return friends;
@@ -44,7 +46,7 @@ public class User {
             log.warn("User with ID = {} already has friend with ID = {}", this.getId(), friendId);
         }
         friends.add(friendId);
-        log.trace("Added friend with ID = {} to user with ID = {}", friendId, this.getId());
+        log.info("Added friend with ID = {} to user with ID = {}", friendId, this.getId());
     }
 
     public void deleteFriend(long friendId) {
@@ -52,6 +54,6 @@ public class User {
             log.warn("User with ID = {} doesn't have friend with ID = {}", this.getId(), friendId);
         }
         friends.remove(friendId);
-        log.trace("Deleted friend with ID = {} from user with ID = {}", friendId, this.getId());
+        log.info("Deleted friend with ID = {} from user with ID = {}", friendId, this.getId());
     }
 }

@@ -127,7 +127,8 @@ class UserContorllerTest {
         Assertions.assertEquals(added.getName(), this.controller.findAll()
                 .stream()
                 .filter(f -> f.getId() == id)
-                .findFirst().orElseThrow(() -> {throw new IllegalStateException("User not found");})
+                .findFirst().orElseThrow(() -> {
+                    throw new IllegalStateException("User not found"); })
                 .getName());
 
     }

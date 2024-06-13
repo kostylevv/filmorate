@@ -174,7 +174,7 @@ class UserContorllerTest {
         Assertions.assertEquals(0, service.getFriends(3).size());
 
         URI uri1 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand("1", "2")
                 .toUri();
@@ -185,7 +185,7 @@ class UserContorllerTest {
         Assertions.assertEquals(0, service.getFriends(3).size());
 
         URI uri2 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand("3", "1")
                 .toUri();
@@ -196,7 +196,7 @@ class UserContorllerTest {
         Assertions.assertEquals(1, service.getFriends(3).size());
 
         URI uri4 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand("454", "1")
                 .toUri();
@@ -232,7 +232,7 @@ class UserContorllerTest {
 
 
         URI uri2 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand("3", "1")
                 .toUri();
@@ -242,7 +242,7 @@ class UserContorllerTest {
         Assertions.assertEquals(2, service.getFriends(1).size());
 
         URI uri3 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand("1", "2")
                 .toUri();
@@ -253,7 +253,7 @@ class UserContorllerTest {
         Assertions.assertEquals(1, service.getFriends(3).size());
 
         URI uri4 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand("1", "3")
                 .toUri();
@@ -284,7 +284,7 @@ class UserContorllerTest {
 
 
         URI uri1 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends")
+                .fromUriString(baseUrl + "/{id}/friends")
                 .encode()
                 .buildAndExpand(Objects.requireNonNull(u1).getId())
                 .toUri();
@@ -297,7 +297,7 @@ class UserContorllerTest {
         Assertions.assertEquals(0, root.size());
 
         URI uri2 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand(u1.getId(), Objects.requireNonNull(u2).getId())
                 .toUri();
@@ -305,7 +305,7 @@ class UserContorllerTest {
         this.restTemplate.put(uri2, new HttpEntity<>(headers));
 
         URI uri3 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand(Objects.requireNonNull(u3).getId(), u1.getId())
                 .toUri();
@@ -313,7 +313,7 @@ class UserContorllerTest {
         this.restTemplate.put(uri3, new HttpEntity<>(headers));
 
         URI uri4 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends")
+                .fromUriString(baseUrl + "/{id}/friends")
                 .encode()
                 .buildAndExpand(u1.getId())
                 .toUri();
@@ -348,7 +348,7 @@ class UserContorllerTest {
 
 
         URI uri1 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends")
+                .fromUriString(baseUrl + "/{id}/friends")
                 .encode()
                 .buildAndExpand(Objects.requireNonNull(u1).getId())
                 .toUri();
@@ -361,17 +361,17 @@ class UserContorllerTest {
         Assertions.assertEquals(0, root.size());
 
         URI uri2 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand(u1.getId(), Objects.requireNonNull(u2).getId())
                 .toUri();
         URI uri3 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand(u1.getId(), Objects.requireNonNull(u3).getId())
                 .toUri();
         URI uri4 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand(u1.getId(), Objects.requireNonNull(u4).getId())
                 .toUri();
@@ -381,7 +381,7 @@ class UserContorllerTest {
         this.restTemplate.put(uri4, new HttpEntity<>(headers));
 
         URI uri5 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
+                .fromUriString(baseUrl + "/{id}/friends/{friendId}")
                 .encode()
                 .buildAndExpand(u2.getId(), u4.getId())
                 .toUri();
@@ -389,7 +389,7 @@ class UserContorllerTest {
         this.restTemplate.put(uri5, new HttpEntity<>(headers));
 
         URI uri6 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/users/{id}/friends/common/{otherId}")
+                .fromUriString(baseUrl + "/{id}/friends/common/{otherId}")
                 .encode()
                 .buildAndExpand(u1.getId(), u2.getId())
                 .toUri();

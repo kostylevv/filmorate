@@ -16,4 +16,4 @@ public class ErrorResponse {
     public String getDescription() {
         return description;
     }
-} 
+}

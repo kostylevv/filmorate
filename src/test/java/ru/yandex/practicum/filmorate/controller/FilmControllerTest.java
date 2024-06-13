@@ -189,7 +189,7 @@ class FilmControllerTest {
         //filmService.like(film1.getId(), user1.getId());
 
         URI uri1 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/films/{id}/like/{userId}")
+                .fromUriString(baseUrl + "/{id}/like/{userId}")
                 .encode()
                 .buildAndExpand(film1.getId(), user1.getId())
                 .toUri();
@@ -229,7 +229,7 @@ class FilmControllerTest {
 
 
         URI uri1 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/films/{id}/like/{userId}")
+                .fromUriString(baseUrl + "/{id}/like/{userId}")
                 .encode()
                 .buildAndExpand(film1.getId(), user1.getId())
                 .toUri();
@@ -253,7 +253,7 @@ class FilmControllerTest {
 
 
         URI uri1 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/films/{id}/like/{userId}")
+                .fromUriString(baseUrl + "/{id}/like/{userId}")
                 .encode()
                 .buildAndExpand(777, user1.getId())
                 .toUri();
@@ -273,7 +273,7 @@ class FilmControllerTest {
 
 
         URI uri1 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/films/{id}/like/{userId}")
+                .fromUriString(baseUrl + "/{id}/like/{userId}")
                 .encode()
                 .buildAndExpand(film1.getId(), 777)
                 .toUri();
@@ -359,7 +359,7 @@ class FilmControllerTest {
         }
 
         URI uri1 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/films/popular?count={count}")
+                .fromUriString(baseUrl + "/popular?count={count}")
                 .encode()
                 .buildAndExpand(12)
                 .toUri();
@@ -372,7 +372,7 @@ class FilmControllerTest {
         Assertions.assertEquals(12, root1.size());
 
         URI uri2 = UriComponentsBuilder
-                .fromUriString(baseUrl + "/films/popular")
+                .fromUriString(baseUrl + "/popular")
                 .encode()
                 .build()
                 .toUri();

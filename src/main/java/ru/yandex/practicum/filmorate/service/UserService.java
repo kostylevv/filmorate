@@ -16,10 +16,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class UserService {
     private UserStorage userStorage;
+    private FilmService filmService;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(UserStorage userStorage, FilmService filmService) {
         this.userStorage = userStorage;
+        this.filmService = filmService;
     }
 
     public User addUser(User user) {
@@ -34,6 +36,7 @@ public class UserService {
         for (User usr : userStorage.findAll()) {
             usr.deleteFriend(user.getId());
         }
+        filmService.removeAllUserLikes(user.getId());
         userStorage.deleteUser(user);
     }
 
@@ -66,14 +69,14 @@ public class UserService {
     public Set<User> getFriends(long id) throws NotFoundException {
         User user = getUserByID(id);
         Set<User> result = new HashSet<>();
-        for (long friendId : user.getFriends()){
+        for (long friendId : user.getFriends()) {
             User friend = getUserByID(friendId);
             result.add(friend);
         }
         return result;
     }
 
-    private User getUserByID(long id) {
+    public User getUserByID(long id) {
         return userStorage.findAll().stream()
                 .filter(u -> u.getId() == id)
                 .findAny()

@@ -4,10 +4,10 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
 
@@ -44,5 +44,20 @@ public class FilmController {
     @DeleteMapping
     public void delete(@Valid @RequestBody Film filmToBeDeleted) throws ValidationException, NotFoundException {
         filmService.deleteFilm(filmToBeDeleted);
+    }
+
+    @PutMapping("/films/{id}/like/{userId}")
+    public void like(@PathVariable("id") long id, @PathVariable("userId") long userId) {
+        filmService.like(id, userId);
+    }
+
+    @DeleteMapping("/films/{id}/like/{userId}")
+    public void unLike(@PathVariable("id") long id, @PathVariable("userId") long userId) {
+        filmService.unLike(id, userId);
+    }
+
+    @GetMapping("/films/popular")
+    public Collection<Film> getPopular(@RequestParam(defaultValue = "10") int count) {
+        return filmService.getMostLiked(count);
     }
 }

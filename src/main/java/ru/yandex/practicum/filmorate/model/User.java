@@ -44,16 +44,18 @@ public class User {
     public void addFriend(long friendId) {
         if (hasFriend(friendId)) {
             log.warn("User with ID = {} already has friend with ID = {}", this.getId(), friendId);
+        } else {
+            friends.add(friendId);
+            log.info("Added friend with ID = {} to user with ID = {}", friendId, this.getId());
         }
-        friends.add(friendId);
-        log.info("Added friend with ID = {} to user with ID = {}", friendId, this.getId());
     }
 
     public void deleteFriend(long friendId) {
-        if (hasFriend(friendId)) {
+        if (!hasFriend(friendId)) {
             log.warn("User with ID = {} doesn't have friend with ID = {}", this.getId(), friendId);
+        } else {
+            friends.remove(friendId);
+            log.info("Deleted friend with ID = {} from user with ID = {}", friendId, this.getId());
         }
-        friends.remove(friendId);
-        log.info("Deleted friend with ID = {} from user with ID = {}", friendId, this.getId());
     }
 }

@@ -14,12 +14,14 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -68,7 +70,7 @@ class UserContorllerTest {
     }
 
     @Test
-    void userIsAddedWihoutNameAndLoginIsUsed() throws Exception {
+    void userIsAddedWihoutNameAndLoginIsUsed() {
         User user = User.builder().birthday(LocalDate.now())
                 .email("nonameuser@exampleml.com").login("expl.login").build();
         HttpEntity<User> request = new HttpEntity<>(user, headers);
@@ -127,7 +129,7 @@ class UserContorllerTest {
         Assertions.assertEquals(added.getName(), this.controller.findAll()
                 .stream()
                 .filter(f -> f.getId() == id)
-                .findFirst().get()
+                .findFirst().orElseThrow(() -> {throw new IllegalStateException("User not found");})
                 .getName());
 
     }
@@ -237,6 +239,8 @@ class UserContorllerTest {
 
         this.restTemplate.put(uri2, new HttpEntity<>(headers));
 
+        Assertions.assertEquals(2, service.getFriends(1).size());
+
         URI uri3 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
                 .encode()
@@ -261,7 +265,7 @@ class UserContorllerTest {
     }
 
     @Test
-    void getFriendsTest() throws NullPointerException, JsonMappingException, JsonProcessingException {
+    void getFriendsTest() throws NullPointerException, JsonProcessingException {
 
         User user1 = User.builder().name("User 124").birthday(LocalDate.now())
                 .email("user124@gmail.com").login("user124").friends(new HashSet<>()).build();
@@ -282,7 +286,7 @@ class UserContorllerTest {
         URI uri1 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/users/{id}/friends")
                 .encode()
-                .buildAndExpand(u1.getId())
+                .buildAndExpand(Objects.requireNonNull(u1).getId())
                 .toUri();
 
         HttpEntity<String> request = new HttpEntity<>("", headers);
@@ -295,7 +299,7 @@ class UserContorllerTest {
         URI uri2 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
                 .encode()
-                .buildAndExpand(u1.getId(), u2.getId())
+                .buildAndExpand(u1.getId(), Objects.requireNonNull(u2).getId())
                 .toUri();
 
         this.restTemplate.put(uri2, new HttpEntity<>(headers));
@@ -303,7 +307,7 @@ class UserContorllerTest {
         URI uri3 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
                 .encode()
-                .buildAndExpand(u3.getId(), u1.getId())
+                .buildAndExpand(Objects.requireNonNull(u3).getId(), u1.getId())
                 .toUri();
 
         this.restTemplate.put(uri3, new HttpEntity<>(headers));
@@ -346,7 +350,7 @@ class UserContorllerTest {
         URI uri1 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/users/{id}/friends")
                 .encode()
-                .buildAndExpand(u1.getId())
+                .buildAndExpand(Objects.requireNonNull(u1).getId())
                 .toUri();
 
         HttpEntity<String> request = new HttpEntity<>("", headers);
@@ -359,17 +363,17 @@ class UserContorllerTest {
         URI uri2 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
                 .encode()
-                .buildAndExpand(u1.getId(), u2.getId())
+                .buildAndExpand(u1.getId(), Objects.requireNonNull(u2).getId())
                 .toUri();
         URI uri3 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
                 .encode()
-                .buildAndExpand(u1.getId(), u3.getId())
+                .buildAndExpand(u1.getId(), Objects.requireNonNull(u3).getId())
                 .toUri();
         URI uri4 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/users/{id}/friends/{friendId}")
                 .encode()
-                .buildAndExpand(u1.getId(), u4.getId())
+                .buildAndExpand(u1.getId(), Objects.requireNonNull(u4).getId())
                 .toUri();
 
         this.restTemplate.put(uri2, new HttpEntity<>(headers));
@@ -392,7 +396,7 @@ class UserContorllerTest {
         ResponseEntity<String> response1 = this.restTemplate.exchange(uri6, HttpMethod.GET, request, String.class);
         Assertions.assertTrue(response1.getStatusCode().is2xxSuccessful());
         System.out.println(response1.getBody());
-        Assertions.assertTrue(response1.getBody().contains("{\"id\":" + u4.getId() + ","));
+        Assertions.assertTrue(Objects.requireNonNull(response1.getBody()).contains("{\"id\":" + u4.getId() + ","));
     }
 
 }

@@ -1,19 +1,28 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class FilmService {
     FilmStorage filmStorage;
+    UserStorage userStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public Film addFilm(Film film) {
@@ -30,5 +39,45 @@ public class FilmService {
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();
+    }
+
+    public void like(long filmId, long userId) {
+        if (userStorage.findAll().stream().anyMatch(user -> user.getId() == userId)) {
+            Film liked = getFilmById(filmId);
+            liked.like(userId);
+        } else {
+            log.error("User with id = {} not found ", userId);
+            throw new NotFoundException("Пользователь с ID = " + userId + " не найден");
+        }
+    }
+
+    public void unLike(long filmId, long userId) {
+        if (userStorage.findAll().stream().anyMatch(user -> user.getId() == userId)) {
+            Film unliked = getFilmById(filmId);
+            unliked.unLike(userId);
+        } else {
+            log.error("User with id = {} not found ", userId);
+            throw new NotFoundException("Пользователь с ID = " + userId + " не найден");
+        }
+    }
+
+    public Set<Film> getMostLiked(int count) {
+        return filmStorage.findAll().stream()
+                .sorted(Comparator.comparing(Film::getLikesCount))
+                .limit(count)
+                .collect(Collectors.toSet());
+    }
+
+    public void removeAllUserLikes(long userId) {
+        for (Film film : findAll()) {
+            film.unLike(userId);
+        }
+    }
+
+    public Film getFilmById(long id) {
+        return filmStorage.findAll().stream()
+                .filter(f -> f.getId() == id)
+                .findAny()
+                .orElseThrow(() -> new NotFoundException("Film with id = " + id + " not found"));
     }
 }

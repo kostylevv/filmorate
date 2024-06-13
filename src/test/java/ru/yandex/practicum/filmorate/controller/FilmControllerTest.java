@@ -381,5 +381,6 @@ class FilmControllerTest {
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         JsonNode root2 = mapper1.readTree(response1.getBody());
         Assertions.assertEquals(10, root2.size());
+        System.out.println(response.getBody());
     }
 }

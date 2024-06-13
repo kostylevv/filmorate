@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @Slf4j
@@ -18,6 +19,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
         film.setId(getNextId());
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
         films.put(film.getId(), film);
         log.info("Added film {}", film);
         return film;
@@ -27,6 +31,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film updateFilm(Film film) {
         try {
             checkFilm(film);
+            if (film.getLikes() == null) {
+                film.setLikes(new HashSet<>());
+            }
             films.put(film.getId(), film);
             return film;
         } catch (ValidationException validationException) {

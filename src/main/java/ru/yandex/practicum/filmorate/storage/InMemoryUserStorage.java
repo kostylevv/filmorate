@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @Slf4j
@@ -21,6 +22,10 @@ public class InMemoryUserStorage implements UserStorage {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+
+        if (user.getFriends() == null) {
+            user.setFriends(new HashSet<>());
+        }
         users.put(user.getId(), user);
         log.info("Added user {}", user);
         return user;
@@ -32,6 +37,9 @@ public class InMemoryUserStorage implements UserStorage {
             checkUser(user);
             if (user.getName() == null || user.getName().isBlank()) {
                 user.setName(user.getLogin());
+            }
+            if (user.getFriends() == null) {
+                user.setFriends(new HashSet<>());
             }
             log.info("Updated user {}", user);
             users.put(user.getId(), user);

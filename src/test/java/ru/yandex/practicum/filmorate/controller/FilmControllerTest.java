@@ -229,7 +229,6 @@ class FilmControllerTest {
         filmService.like(film2.getId(), user1.getId());
         filmService.like(film3.getId(), user2.getId());
 
-
         URI uri1 = UriComponentsBuilder
                 .fromUriString(baseUrl + "/{id}/like/{userId}")
                 .encode()

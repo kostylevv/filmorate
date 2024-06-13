@@ -139,7 +139,7 @@ class FilmControllerTest {
         Assertions.assertEquals(added.getName(), this.controller.findAll()
                 .stream()
                 .filter(f -> f.getId() == id)
-                .findFirst().orElseThrow(() -> {throw new IllegalStateException("Film not found");})
+                .findFirst().orElseThrow(() -> { throw new IllegalStateException("Film not found"); })
                 .getName());
     }
 
@@ -199,7 +199,7 @@ class FilmControllerTest {
 
         Assertions.assertEquals(1, film1.getLikesCount());
         Assertions.assertEquals(user1.getId(), film1.getLikes().stream().findFirst()
-                .orElseThrow(() -> {throw new IllegalStateException("Like failed");}));
+                .orElseThrow(() -> { throw new IllegalStateException("Like failed"); }));
         Assertions.assertEquals(0, film2.getLikesCount());
         Assertions.assertEquals(0, film3.getLikesCount());
     }
@@ -241,7 +241,7 @@ class FilmControllerTest {
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertEquals(1, film1.getLikesCount());
         Assertions.assertEquals(user2.getId(), film1.getLikes().stream().findFirst()
-                .orElseThrow(() -> {throw new IllegalStateException("Like failed");}));
+                .orElseThrow(() -> { throw new IllegalStateException("Like failed"); }));
     }
 
     @Test
@@ -353,7 +353,7 @@ class FilmControllerTest {
         filmService.addFilm(film12);
 
         for (int i = (int) film1.getId(); i <= (int)(film1.getId() + 12); i++) {
-            for (int j = (int) user1.getId(); j <= (13-i); j++) {
+            for (int j = (int) user1.getId(); j <= (13 - i); j++) {
                 filmService.like(i, j);
             }
         }

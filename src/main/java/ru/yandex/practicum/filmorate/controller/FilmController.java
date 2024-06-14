@@ -4,8 +4,6 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -38,12 +36,12 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film updatedFilm) throws ValidationException, NotFoundException {
+    public Film update(@Valid @RequestBody Film updatedFilm) {
         return filmService.updateFilm(updatedFilm);
     }
 
     @DeleteMapping
-    public void delete(@Valid @RequestBody Film filmToBeDeleted) throws ValidationException, NotFoundException {
+    public void delete(@Valid @RequestBody Film filmToBeDeleted) {
         filmService.deleteFilm(filmToBeDeleted);
     }
 

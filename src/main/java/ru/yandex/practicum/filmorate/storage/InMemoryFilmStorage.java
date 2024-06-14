@@ -1,10 +1,9 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,47 +28,39 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film updateFilm(Film film) {
-        try {
-            checkFilm(film);
-            if (film.getLikes() == null) {
-                film.setLikes(new HashSet<>());
-            }
-            films.put(film.getId(), film);
-            return film;
-        } catch (ValidationException validationException) {
-            log.error("Updated film id should be present");
-            throw validationException;
-        } catch (NotFoundException notFoundException) {
-            log.error("Film with id = {} wasn't found and couldn't be updated", film.getId());
-            throw notFoundException;
+        if (!films.containsKey(film.getId())) {
+            log.error("Film with id = {} not found", film.getId());
+            throw new NotFoundException("Фильм с ID = " + film.getId() + " не найден");
         }
+        if (film.getLikes() == null) {
+            film.setLikes(new HashSet<>());
+        }
+        log.info("Updated film {}", film);
+        films.put(film.getId(), film);
+        return film;
     }
 
     @Override
     public void deleteFilm(Film film) {
-        try {
-            checkFilm(film);
-            films.remove(film.getId());
-        } catch (ValidationException validationException) {
-            log.error("Film id to be deleted should be present");
-            throw validationException;
-        } catch (NotFoundException notFoundException) {
-            log.error("Film with id = {} wasn't found and couldn't be deleted", film.getId());
-            throw notFoundException;
+        if (!films.containsKey(film.getId())) {
+            log.error("Film with id = {} not found", film.getId());
+            throw new NotFoundException("Фильм с ID = " + film.getId() + " не найден");
         }
+        log.info("Deleted film {}", film);
+        films.remove(film.getId());
     }
 
+    @Override
     public Collection<Film> findAll() {
         return films.values();
     }
 
-    private void checkFilm(Film film) {
-        if (film.getId() == 0) {
-            throw new ValidationException("ID не может быть пустым");
+    public Film getFilmById(long id) {
+        if (!films.containsKey(id)) {
+            log.error("Film with id = {} not found", id);
+            throw new NotFoundException("Фильм с ID = " + id + " не найден");
         }
-        if (!films.containsKey(film.getId())) {
-            throw new NotFoundException("Фильм с id = " + film.getId() + " не найден");
-        }
+        return films.get(id);
     }
 
     private long getNextId() {

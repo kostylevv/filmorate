@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class FilmService {
-    FilmStorage filmStorage;
-    UserStorage userStorage;
+    private FilmStorage filmStorage;
+    private UserStorage userStorage;
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
@@ -42,23 +42,15 @@ public class FilmService {
     }
 
     public void like(long filmId, long userId) {
-        if (userStorage.findAll().stream().anyMatch(user -> user.getId() == userId)) {
-            Film liked = getFilmById(filmId);
-            liked.like(userId);
-        } else {
-            log.error("User with id = {} not found ", userId);
-            throw new NotFoundException("Пользователь с ID = " + userId + " не найден");
-        }
+        User liker = userStorage.getUserById(userId);
+        Film liked = getFilmById(filmId);
+        liked.like(liker.getId());
     }
 
     public void unLike(long filmId, long userId) {
-        if (userStorage.findAll().stream().anyMatch(user -> user.getId() == userId)) {
-            Film unliked = getFilmById(filmId);
-            unliked.unLike(userId);
-        } else {
-            log.error("User with id = {} not found ", userId);
-            throw new NotFoundException("Пользователь с ID = " + userId + " не найден");
-        }
+        User unliker = userStorage.getUserById(userId);
+        Film unliked = getFilmById(filmId);
+            unliked.unLike(unliker.getId());
     }
 
     public List<Film> getMostLiked(int count) {
@@ -75,9 +67,6 @@ public class FilmService {
     }
 
     public Film getFilmById(long id) {
-        return filmStorage.findAll().stream()
-                .filter(f -> f.getId() == id)
-                .findAny()
-                .orElseThrow(() -> new NotFoundException("Film with id = " + id + " not found"));
+        return filmStorage.getFilmById(id);
     }
 }

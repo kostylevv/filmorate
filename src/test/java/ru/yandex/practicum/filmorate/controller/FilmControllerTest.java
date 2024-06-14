@@ -290,72 +290,25 @@ class FilmControllerTest {
 
     @Test
     void getPopularIsOk() throws Exception {
-        User user1 = User.builder().name("User 1").birthday(LocalDate.now())
-                .email("user1@gmail.com").login("user1").friends(new HashSet<>()).build();
-        User user2 = User.builder().name("User 2").birthday(LocalDate.now())
-                .email("user2@gmail.com").login("user2").friends(new HashSet<>()).build();
-        User user3 = User.builder().name("Name").birthday(LocalDate.now())
-                .email("user3@gmail.com").login("user3").friends(new HashSet<>()).build();
-        User user4 = User.builder().name("User 1").birthday(LocalDate.now())
-                .email("user1@gmail.com").login("user1").friends(new HashSet<>()).build();
-        User user5 = User.builder().name("User 2").birthday(LocalDate.now())
-                .email("user2@gmail.com").login("user2").friends(new HashSet<>()).build();
-        User user6 = User.builder().name("Name").birthday(LocalDate.now())
-                .email("user3@gmail.com").login("user3").friends(new HashSet<>()).build();
-        User user7 = User.builder().name("User 1").birthday(LocalDate.now())
-                .email("user1@gmail.com").login("user1").friends(new HashSet<>()).build();
-        User user8 = User.builder().name("User 2").birthday(LocalDate.now())
-                .email("user2@gmail.com").login("user2").friends(new HashSet<>()).build();
-        User user9 = User.builder().name("Name").birthday(LocalDate.now())
-                .email("user3@gmail.com").login("user3").friends(new HashSet<>()).build();
-        User user10 = User.builder().name("User 1").birthday(LocalDate.now())
-                .email("user1@gmail.com").login("user1").friends(new HashSet<>()).build();
-        User user11 = User.builder().name("User 2").birthday(LocalDate.now())
-                .email("user2@gmail.com").login("user2").friends(new HashSet<>()).build();
-        User user12 = User.builder().name("Name").birthday(LocalDate.now())
-                .email("user3@gmail.com").login("user3").friends(new HashSet<>()).build();
+        long firstUsrId = 0;
+        long firstFilmId = 0;
 
-        userService.addUser(user1);
-        userService.addUser(user2);
-        userService.addUser(user3);
-        userService.addUser(user4);
-        userService.addUser(user5);
-        userService.addUser(user6);
-        userService.addUser(user7);
-        userService.addUser(user8);
-        userService.addUser(user9);
-        userService.addUser(user10);
-        userService.addUser(user11);
-        userService.addUser(user12);
+        for (int i = 0; i < 12; i++) {
+            User user = User.builder().name("User " + i).birthday(LocalDate.now())
+                    .email("user" + i + "@gmail.com").login("user" + i).friends(new HashSet<>()).build();
+            userService.addUser(user);
 
-        Film film1 = Film.builder().name("name1").description("desc").releaseDate(LocalDate.now()).duration(1).build();
-        Film film2 = Film.builder().name("name2").description("desc").releaseDate(LocalDate.now()).duration(2).build();
-        Film film3 = Film.builder().name("name3").description("desc").releaseDate(LocalDate.now()).duration(3).build();
-        Film film4 = Film.builder().name("name4").description("desc").releaseDate(LocalDate.now()).duration(1).build();
-        Film film5 = Film.builder().name("name5").description("desc").releaseDate(LocalDate.now()).duration(2).build();
-        Film film6 = Film.builder().name("name6").description("desc").releaseDate(LocalDate.now()).duration(3).build();
-        Film film7 = Film.builder().name("name7").description("desc").releaseDate(LocalDate.now()).duration(1).build();
-        Film film8 = Film.builder().name("name8").description("desc").releaseDate(LocalDate.now()).duration(2).build();
-        Film film9 = Film.builder().name("name9").description("desc").releaseDate(LocalDate.now()).duration(3).build();
-        Film film10 = Film.builder().name("name10").description("desc").releaseDate(LocalDate.now()).duration(1).build();
-        Film film11 = Film.builder().name("name11").description("desc").releaseDate(LocalDate.now()).duration(2).build();
-        Film film12 = Film.builder().name("name12").description("desc").releaseDate(LocalDate.now()).duration(3).build();
+            Film film = Film.builder().name("name" + i).description("desc").releaseDate(LocalDate.now()).duration(1).build();
+            filmService.addFilm(film);
 
-        filmService.addFilm(film1);
-        filmService.addFilm(film2);
-        filmService.addFilm(film3);
-        filmService.addFilm(film4);
-        filmService.addFilm(film5);
-        filmService.addFilm(film6);
-        filmService.addFilm(film7);
-        filmService.addFilm(film8);
-        filmService.addFilm(film9);
-        filmService.addFilm(film10);
-        filmService.addFilm(film11);
-        filmService.addFilm(film12);
+            if (i == 0) {
+                firstUsrId = user.getId();
+                firstFilmId = film.getId();
+            }
+        }
 
-        for (int i = (int) film1.getId(); i <= (int)(film1.getId() + 12); i++) {
-            for (int j = (int) user1.getId(); j <= (13 - i); j++) {
+        for (int i = (int) firstFilmId; i <= (int)(firstFilmId + 12); i++) {
+            for (int j = (int) firstUsrId; j <= (13 - i); j++) {
                 filmService.like(i, j);
             }
         }

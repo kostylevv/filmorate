@@ -14,6 +14,8 @@ import java.util.Set;
 
 /**
  * Film.
+ * @TODO add fields: genre, MPA-rating
+ *
  */
 @Data
 @Builder

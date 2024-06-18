@@ -11,6 +11,10 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * User
+ * @TODO add field confirmedFriend (bool)
+ */
 @Data
 @Builder
 @Slf4j

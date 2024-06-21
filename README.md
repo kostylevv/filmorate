@@ -48,7 +48,7 @@ OR (user_id_2 = 100 AND status = 'FRIENDS')
 ```
 // ТОП-50
 SELECT * FROM films 
-WHERE id IN (SELECT count(film_id)
+WHERE id IN (SELECT film_id
                       FROM likes
                       ORDER BY count(film_id) DESC
                       LIMIT 50);

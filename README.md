@@ -4,7 +4,8 @@
 ### ER диаграмма
 Диаграмма находится [здесь](https://dbdiagram.io/d/Filmorate-66718aaf5a764b3c72c8eb78)
 
-![ER](https://github.com/kostylevv/filmorate/assets/725305/e5d6394a-0e9e-4170-88b8-74420d064520)
+![er](https://github.com/kostylevv/filmorate/assets/725305/6d3acd03-e480-4d03-9434-204240bcfb51)
+
 
 
 #### Реализация "дружбы"
